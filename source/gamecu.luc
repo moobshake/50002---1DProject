@@ -1,0 +1,557 @@
+module gamecu (
+    input clk,  // clock
+    input rst,  // reset
+    
+    input rb_fromReg[16], // take in rb
+    
+    input boardbutton[10],
+    input startbutton,
+    
+    input decrease_timer,
+    
+    output win,
+    output lose,
+    output we,
+    output ra[5],
+    output rb[5],
+    output rc[5],
+    output asel[2],
+    output bsel[2],
+    output wdsel[2],
+    output alufn[6]
+  ) {
+  
+  .clk(clk){
+    .rst(rst){
+      dff win_dff;
+      dff lose_dff;
+      
+      fsm bigFSM = {
+      START_RESET,
+      RESET_USER_SEQUENCE_COUNTER,
+      CLEAR_USER_SEQUENCE,
+      LOAD_TIME,
+      IDLE,
+      IDLE_BUTTON_RELEASE,
+        
+      CHECK_BASE_TIME,
+      BRANCH_FROM_TIME_CHECK,
+      DECREASE_TIME_BY_1,
+      BRANCH_FROM_DECREASE,
+      STORE_DECREASED_TIME,
+      BRANCH_FROM_STORE_TIME,
+        
+      BUTTON_0,
+      BUTTON_1,
+      BUTTON_2,
+      BUTTON_3,
+      BUTTON_4,
+      BUTTON_5,
+      BUTTON_6,
+      BUTTON_7,
+      BUTTON_8,
+      BUTTON_9,
+      BRANCH_ST_USER_INPUT,
+      USER_SEQUENCE_COUNTER_SHIFT,
+      BRANCH_FROM_SHIFT,
+      ADD_SHIFTED_VALUE_TO_TEMP,
+      BRANCH_FROM_ADD,
+      STORE_TO_USER_SEQUENCE,
+      BRANCH_FROM_STORE,
+      FIND_MASKED_POSITION,
+      BRANCH_FROM_DIVISION,
+      FIND_ADDRESS_TO_MASK,
+      BRANCH_FROM_FIND_ADDRESS,
+      MASK_CORRECT_SEQUENCE1,
+      MASK_CORRECT_SEQUENCE2,
+      MASK_CORRECT_SEQUENCE3,
+      MASK_CORRECT_SEQUENCE4,
+      BRANCH_FROM_MASK,
+      COMPARE_BOTH_SEQUENCES,
+      BRANCH_FROM_INPUT_CHECK,
+      CHECK_BASE_USER_SEQUENCE_COUNTER,
+      BRANCH_USER_COUNTER,
+      DECREASE_USER_COUNTER,
+      BRANCH_FROM_DECREASED_COUNTER,
+      STORE_USER_COUNTER,
+      BRANCH_CLEAR_TEMP_REGS,
+      
+      CLEAR_REG_0X17,
+      CLEAR_REG_0X18,
+      CLEAR_REG_0X19,
+      CLEAR_REG_0X1A,
+      CLEAR_REG_0X1B,
+      CLEAR_REG_0X1C,
+      CLEAR_REG_0X1D,
+      CLEAR_REG_0X1E,
+      CLEAR_REG_0X1F,
+      BRANCH_FROM_CLEAR_REG,
+        
+      YOU_WIN,
+      BOOM
+      };
+    }
+  }
+  
+  const ADDOP = 6b000000;
+  const SUBOP = 6b000001;
+//  const MULOP = 6b001000;
+  const DIVOP = 6b001001;
+  const ANDOP = 6b011000;
+//  const NANDOP = 6b010111;
+//  const OROP = 6b011110;
+//  const NOROP = 6b010001;
+//  const XOROP = 6b010110;
+//  const XNOROP = 6b011001;
+  const ALDROP = 6b011010;
+  const SHLOP = 6b100000;
+//  const SHROP = 6b100001;
+//  const SRAOP = 6b100011;
+  const CMPEQOP = 6b110011;
+//  const CMPLTOP = 6b110101;
+//  const CMPLEOP = 6b110111;
+
+  always {
+  
+    win = win_dff.q;
+    lose = lose_dff.q;
+    we = 0;
+    ra = 0;
+    rb = 0;
+    rc = 0;
+    asel = 0;
+    bsel = 0;
+    wdsel = 0;
+    alufn = 0;
+    
+    case (bigFSM.q) {
+      bigFSM.START_RESET:
+        if (startbutton) {
+            lose_dff.d = 0;
+            win_dff.d = 0;
+            bigFSM.d = bigFSM.RESET_USER_SEQUENCE_COUNTER;
+          }
+        else {bigFSM.d = bigFSM.START_RESET;}
+        
+      bigFSM.RESET_USER_SEQUENCE_COUNTER:
+        we = 1;
+        rc = 5h10;
+        wdsel = 10;
+        bigFSM.d = bigFSM.CLEAR_USER_SEQUENCE;
+        
+      bigFSM.CLEAR_USER_SEQUENCE:
+        we = 1;
+        rc = 5h0f;
+        wdsel = 11;
+        bigFSM.d = bigFSM.LOAD_TIME;
+        
+      bigFSM.LOAD_TIME:
+        we = 1;
+        rc = 5h16;
+        wdsel = 01;
+        bigFSM.d = bigFSM.IDLE;
+        
+      bigFSM.IDLE:
+        if (decrease_timer) {
+          bigFSM.d = bigFSM.CHECK_BASE_TIME;
+        }
+        else if (boardbutton[0]){
+          bigFSM.d = bigFSM.BUTTON_0;
+        }
+        else if (boardbutton[1]){
+          bigFSM.d = bigFSM.BUTTON_1;
+        }
+        else if (boardbutton[2]){
+          bigFSM.d = bigFSM.BUTTON_2;
+        }
+        else if (boardbutton[3]){
+          bigFSM.d = bigFSM.BUTTON_3;
+        }
+        else if (boardbutton[4]){
+          bigFSM.d = bigFSM.BUTTON_4;
+        }
+        else if (boardbutton[5]){
+          bigFSM.d = bigFSM.BUTTON_5;
+        }
+        else if (boardbutton[6]){
+          bigFSM.d = bigFSM.BUTTON_6;
+        }
+        else if (boardbutton[7]){
+          bigFSM.d = bigFSM.BUTTON_7;
+        }
+        else if (boardbutton[8]){
+          bigFSM.d = bigFSM.BUTTON_8;
+        }
+        else if (boardbutton[9]){
+          bigFSM.d = bigFSM.BUTTON_9;
+        }
+        else {
+          bigFSM.d = bigFSM.IDLE;
+        }
+        
+      bigFSM.BUTTON_0:
+        we = 1;
+        ra = 5h00;
+        rc = 5h17;
+        bsel = 11;
+        alufn = ALDROP;
+        bigFSM.d = bigFSM.BRANCH_ST_USER_INPUT;
+     
+     bigFSM.BUTTON_1:
+        we = 1;
+        ra = 5h01;
+        rc = 5h17;
+        bsel = 11;
+        alufn = ALDROP;
+        bigFSM.d = bigFSM.BRANCH_ST_USER_INPUT;
+      
+      bigFSM.BUTTON_2:
+        we = 1;
+        ra = 5h02;
+        rc = 5h17;
+        bsel = 11;
+        alufn = ALDROP;
+        bigFSM.d = bigFSM.BRANCH_ST_USER_INPUT;
+        
+      bigFSM.BUTTON_3:
+        we = 1;
+        ra = 5h03;
+        rc = 5h17;
+        bsel = 11;
+        alufn = ALDROP;
+        bigFSM.d = bigFSM.BRANCH_ST_USER_INPUT;
+        
+      bigFSM.BUTTON_4:
+        we = 1;
+        ra = 5h04;
+        rc = 5h17;
+        bsel = 11;
+        alufn = ALDROP;
+        bigFSM.d = bigFSM.BRANCH_ST_USER_INPUT;
+        
+      bigFSM.BUTTON_5:
+        we = 1;
+        ra = 5h05;
+        rc = 5h17;
+        bsel = 11;
+        alufn = ALDROP;
+        bigFSM.d = bigFSM.BRANCH_ST_USER_INPUT;
+        
+      bigFSM.BUTTON_6:
+        we = 1;
+        ra = 5h06;
+        rc = 5h17;
+        bsel = 11;
+        alufn = ALDROP;
+        bigFSM.d = bigFSM.BRANCH_ST_USER_INPUT;
+        
+      bigFSM.BUTTON_7:
+        we = 1;
+        ra = 5h07;
+        rc = 5h17;
+        bsel = 11;
+        alufn = ALDROP;
+        bigFSM.d = bigFSM.BRANCH_ST_USER_INPUT;
+        
+      bigFSM.BUTTON_8:
+        we = 1;
+        ra = 5h08;
+        rc = 5h17;
+        bsel = 11;
+        alufn = ALDROP;
+        bigFSM.d = bigFSM.BRANCH_ST_USER_INPUT;
+        
+      bigFSM.BUTTON_9:
+        we = 1;
+        ra = 5h09;
+        rc = 5h17;
+        bsel = 11;
+        alufn = ALDROP;
+        bigFSM.d = bigFSM.BRANCH_ST_USER_INPUT;
+        
+      bigFSM.BRANCH_ST_USER_INPUT:
+        bigFSM.d = bigFSM.USER_SEQUENCE_COUNTER_SHIFT;
+        
+      bigFSM.USER_SEQUENCE_COUNTER_SHIFT:
+        we = 1;
+        ra = 5h17;
+        rb = 5h10;
+        rc = 5h18;
+        alufn = SHLOP;
+        bigFSM.d = bigFSM.BRANCH_FROM_SHIFT;
+      
+      bigFSM.BRANCH_FROM_SHIFT:
+        bigFSM.d = bigFSM.ADD_SHIFTED_VALUE_TO_TEMP;
+      
+      bigFSM.ADD_SHIFTED_VALUE_TO_TEMP:
+        we = 1;
+        ra = 5h0f;
+        rb = 5h18;
+        rc = 5h19;
+        alufn = ADDOP;
+        bigFSM.d = bigFSM.BRANCH_FROM_ADD;
+        
+      bigFSM.BRANCH_FROM_ADD:
+        bigFSM.d = bigFSM.STORE_TO_USER_SEQUENCE;
+        
+      bigFSM.STORE_TO_USER_SEQUENCE:
+        we = 1;
+        ra = 5h19;
+        rc = 5h0f;
+        bsel = 11;
+        alufn = ALDROP;
+        bigFSM.d = bigFSM.BRANCH_FROM_STORE;
+        
+      bigFSM.BRANCH_FROM_STORE:
+        bigFSM.d = bigFSM.FIND_MASKED_POSITION;
+      
+      bigFSM.FIND_MASKED_POSITION:
+        we = 1;
+        ra = 5h10;
+        rc = 5h1a;
+        bsel = 10;
+        alufn = DIVOP;
+        bigFSM.d = bigFSM.BRANCH_FROM_DIVISION;
+        
+      bigFSM.BRANCH_FROM_DIVISION:
+        bigFSM.d = bigFSM.FIND_ADDRESS_TO_MASK;
+        
+      bigFSM.FIND_ADDRESS_TO_MASK:
+        we = 1;
+        ra = 5h15;
+        rb = 5h1a;
+        rc = 5h1b;
+        alufn = ADDOP;
+        bigFSM.d = bigFSM.BRANCH_FROM_FIND_ADDRESS;
+        
+      bigFSM.BRANCH_FROM_FIND_ADDRESS:
+        rb = 5h1b;
+        if (rb_fromReg == 16h0011) {
+          bigFSM.d = bigFSM.MASK_CORRECT_SEQUENCE1;
+        }
+        else if (rb_fromReg == 16h0012) {
+          bigFSM.d = bigFSM.MASK_CORRECT_SEQUENCE2;
+        }
+        else if (rb_fromReg == 16h0013) {
+          bigFSM.d = bigFSM.MASK_CORRECT_SEQUENCE3;
+        }
+        else if (rb_fromReg == 16h0012) {
+          bigFSM.d = bigFSM.MASK_CORRECT_SEQUENCE4;
+        }
+      
+      bigFSM.MASK_CORRECT_SEQUENCE1:
+        we = 1;
+        ra = 5h1a;
+        rb = 5h11;
+        rc = 5h1c;
+        alufn = ANDOP;
+        bigFSM.d = bigFSM.BRANCH_FROM_MASK;
+        
+      bigFSM.MASK_CORRECT_SEQUENCE2:
+        we = 1;
+        ra = 5h1a;
+        rb = 5h12;
+        rc = 5h1c;
+        alufn = ANDOP;
+        bigFSM.d = bigFSM.BRANCH_FROM_MASK;
+        
+      bigFSM.MASK_CORRECT_SEQUENCE3:
+        we = 1;
+        ra = 5h1a;
+        rb = 5h13;
+        rc = 5h1c;
+        alufn = ANDOP;
+        bigFSM.d = bigFSM.BRANCH_FROM_MASK;
+        
+      bigFSM.MASK_CORRECT_SEQUENCE4:
+        we = 1;
+        ra = 5h1a;
+        rb = 5h14;
+        rc = 5h1c;
+        alufn = ANDOP;
+        bigFSM.d = bigFSM.BRANCH_FROM_MASK;
+        
+      bigFSM.BRANCH_FROM_MASK:
+        bigFSM.d = bigFSM.COMPARE_BOTH_SEQUENCES;
+        
+      bigFSM.COMPARE_BOTH_SEQUENCES:
+        we = 1;
+        ra = 5h0f;
+        rb = 5h1c;
+        rc = 5h1f;
+        alufn = CMPEQOP;
+        bigFSM.d = bigFSM.BRANCH_FROM_INPUT_CHECK;
+        
+      bigFSM.BRANCH_FROM_INPUT_CHECK:
+        rb = 5h1f;
+        if (rb_fromReg == 16h0001) {
+          bigFSM.d = bigFSM.BOOM;
+        }
+        else if (rb_fromReg == 16b0000) {
+          bigFSM.d = bigFSM.CHECK_BASE_USER_SEQUENCE_COUNTER;
+        }
+        
+      bigFSM.CHECK_BASE_USER_SEQUENCE_COUNTER:
+        we = 1;
+        ra = 5h10;
+        rc = 5h1d;
+        bsel = 11;
+        alufn = CMPEQOP;
+        bigFSM.d = bigFSM.BRANCH_USER_COUNTER;
+        
+      bigFSM.BRANCH_USER_COUNTER:
+        rb = 5h1d;
+        if (rb_fromReg == 16h0000) {
+          bigFSM.d = bigFSM.DECREASE_USER_COUNTER;
+        }
+        else if (rb_fromReg == 16h0001) {
+          bigFSM.d = bigFSM.YOU_WIN;
+        } 
+        else {
+          bigFSM.d = bigFSM.BRANCH_USER_COUNTER;
+        }
+        
+      bigFSM.DECREASE_USER_COUNTER:
+        we = 1;
+        ra = 5h10;
+        rc = 5h1e;
+        bsel = 10;
+        alufn = SUBOP;
+        bigFSM.d = bigFSM.BRANCH_FROM_DECREASED_COUNTER;
+        
+      bigFSM.BRANCH_FROM_DECREASED_COUNTER:
+        bigFSM.d = bigFSM.STORE_USER_COUNTER;
+      
+      bigFSM.STORE_USER_COUNTER:
+        we = 1;
+        ra = 5h1e;
+        rc = 5h10;
+        alufn = ALDROP;
+        bigFSM.d = bigFSM.BRANCH_CLEAR_TEMP_REGS;
+        
+        
+      bigFSM.CHECK_BASE_TIME:
+        we = 1;
+        ra = 5h16;
+        rb = 5h1f;
+        rc = 5h1f;
+        bsel = 11;
+        alufn = CMPEQOP;
+        bigFSM.d = bigFSM.BRANCH_FROM_TIME_CHECK;
+        
+      bigFSM.BRANCH_FROM_TIME_CHECK:
+        rb = 5h1f;
+        if (rb_fromReg == 16b1) {
+          bigFSM.d = bigFSM.BOOM;
+        }
+        else if (rb_fromReg == 16b0) {
+          bigFSM.d = bigFSM.DECREASE_TIME_BY_1;
+        }
+      bigFSM.DECREASE_TIME_BY_1:
+        we = 1;
+        ra = 5h16;
+        rc = 5h1e;
+        bsel = 01;
+        alufn = SUBOP;
+        bigFSM.d = bigFSM.BRANCH_FROM_DECREASE;
+        
+      bigFSM.BRANCH_FROM_DECREASE:
+        bigFSM.d = bigFSM.STORE_DECREASED_TIME;
+        
+      bigFSM.STORE_DECREASED_TIME:
+        we = 1;
+        ra = 5h1e;
+        rc = 5h16;
+        alufn = ALDROP;
+        bigFSM.d = bigFSM.BRANCH_FROM_STORE_TIME;
+        
+      bigFSM.BRANCH_FROM_STORE_TIME:
+        bigFSM.d = bigFSM.CLEAR_REG_0X1E;
+      
+      bigFSM.BRANCH_CLEAR_TEMP_REGS:
+        bigFSM.d = bigFSM.CLEAR_REG_0X17;
+        
+      bigFSM.CLEAR_REG_0X17:
+        we = 1;
+        rc = 5h1e;
+        wdsel = 11;
+        bigFSM.d = bigFSM.CLEAR_REG_0X18;
+        
+      bigFSM.CLEAR_REG_0X18:
+        we = 1;
+        rc = 5h1e;
+        wdsel = 11;
+        bigFSM.d = bigFSM.CLEAR_REG_0X19;
+        
+      bigFSM.CLEAR_REG_0X19:
+        we = 1;
+        rc = 5h1e;
+        wdsel = 11;
+        bigFSM.d = bigFSM.CLEAR_REG_0X1A;
+      
+      bigFSM.CLEAR_REG_0X1A:
+        we = 1;
+        rc = 5h1e;
+        wdsel = 11;
+        bigFSM.d = bigFSM.CLEAR_REG_0X1B;
+        
+      bigFSM.CLEAR_REG_0X1B:
+        we = 1;
+        rc = 5h1e;
+        wdsel = 11;
+        bigFSM.d = bigFSM.CLEAR_REG_0X1C;
+        
+      bigFSM.CLEAR_REG_0X1C:
+        we = 1;
+        rc = 5h1e;
+        wdsel = 11;
+        bigFSM.d = bigFSM.CLEAR_REG_0X1D;
+        
+      bigFSM.CLEAR_REG_0X1D:
+        we = 1;
+        rc = 5h1e;
+        wdsel = 11;
+        bigFSM.d = bigFSM.CLEAR_REG_0X1E;
+        
+      bigFSM.CLEAR_REG_0X1E:
+        we = 1;
+        rc = 5h1e;
+        wdsel = 11;
+        bigFSM.d = bigFSM.CLEAR_REG_0X1F;
+        
+      bigFSM.CLEAR_REG_0X1F:
+        we = 1;
+        rc = 5h1f;
+        wdsel = 11;
+        bigFSM.d = bigFSM.BRANCH_FROM_CLEAR_REG;
+        
+      bigFSM.BRANCH_FROM_CLEAR_REG:
+        if (win_dff.q == 0 && lose_dff.q == 0) {
+          bigFSM.d = bigFSM.IDLE_BUTTON_RELEASE;
+        }
+        else if (win_dff.q == 1 || lose_dff.q == 1) {
+          bigFSM.d = bigFSM.IDLE;
+        }
+      
+      bigFSM.IDLE_BUTTON_RELEASE:
+        if (decrease_timer) {
+          bigFSM.d = bigFSM.CHECK_BASE_TIME;
+        }
+        else if (boardbutton[0] || boardbutton[1] || boardbutton[2] || boardbutton[3] || boardbutton[4] || \
+            boardbutton[5] || boardbutton[6] || boardbutton[7] || boardbutton[8] || boardbutton[9]) {
+          bigFSM.d = bigFSM.IDLE_BUTTON_RELEASE;
+        }
+        else {
+          bigFSM.d = bigFSM.START_RESET;
+        }
+        
+      bigFSM.BOOM: // need to ADD ON
+        lose_dff.d = 1;
+        bigFSM.d = bigFSM.BRANCH_CLEAR_TEMP_REGS;
+        
+      bigFSM.YOU_WIN:
+        win_dff.d = 1;
+        bigFSM.d = bigFSM.BRANCH_CLEAR_TEMP_REGS;
+    }
+  }
+}

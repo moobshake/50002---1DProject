@@ -31,13 +31,16 @@ module au_top (
     // The reset conditioner is used to synchronize the reset signal to the FPGA
     // clock. This ensures the entire FPGA comes out of reset at the same time.
     reset_conditioner reset_cond;
+    
     button_conditioner boardbuttoncond[10];
     button_conditioner startbuttoncond;
     edge_detector startbuttondector(#RISE(1), #FALL(0)); //detect on rising edge only
+      
     .rst(rst) {
       multi_seven_seg seg_correct;
       multi_seven_seg seg_timer;
       multi_seven_seg seg_player;
+      beta betaCPU;
     }
   }
   
@@ -49,18 +52,23 @@ module au_top (
 
     usb_tx = usb_rx;        // echo the serial data
     
+    ledButton = boardbutton;
+    
     boardbuttoncond.in = boardbutton;
-    
-    ledWIN = boardbuttoncond.out[0];
-    ledLOSE = boardbuttoncond.out[1];
-    
     startbuttoncond.in = startbutton;
     startbuttondector.in = startbuttoncond.out;
-    ledStartButton = startbuttondector.out;
     
-    seg_correct.values = {4h8, 4h8, 4h8, 4h8};
-    seg_timer.values = {4h8, 4h8, 4h8, 4h8};
-    seg_player.values = {4h8, 4h8, 4h8, 4h8};
+    betaCPU.boardbutton = boardbuttoncond.out;
+    betaCPU.startbutton = startbuttondector.out;
+    
+    ledWIN = betaCPU.winLed;
+    ledLOSE = betaCPU.loseLed;
+    
+    ledStartButton = startbutton; // debug start button
+    
+    seg_correct.values = betaCPU.correctSequence;
+    seg_timer.values = betaCPU.timer;
+    seg_player.values = betaCPU.userSequence;
     
     timer_seg = ~seg_timer.seg; // connect segments to the driver
     timer_sel = ~seg_timer.sel; // connect digit select to the driver
@@ -70,7 +78,5 @@ module au_top (
     
     correct_seg = ~seg_correct.seg;
     correct_seg_sel = ~seg_correct.sel;
-    
-    ledButton = boardbutton;
   }
 }

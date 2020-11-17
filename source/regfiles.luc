@@ -1,0 +1,203 @@
+module regfiles (
+    input clk,  // clock
+    input rst,  // reset
+    
+    input write_address[5], // write address
+    input we, // write enable
+    input data[16], // data in
+    
+    
+    input read_address_a[5], //address port a 
+    input read_address_b[5], //address port b
+    output out_a[16], //read port a
+    output out_b[16], //read port b
+    
+    // 3 output. Timer, Correct Sequence, Player Sequence
+    output out_timer[16],
+    output out_correct_sequence[16],
+    output out_player_squeence[16]
+  ) {
+  
+  .clk(clk){
+    .rst(rst){
+      dff zero_button[16];
+      dff one_button[16];
+      dff two_button[16];
+      dff three_button[16];
+      dff four_button[16];
+      dff five_button[16];
+      dff six_button[16];
+      dff seven_button[16];
+      dff eight_button[16];
+      dff nine_button[16];
+      
+      dff correct_sequence_one[16];
+      dff correct_sequence_two[16];
+      dff correct_sequence_three[16];
+      dff correct_sequence_four[16];
+      dff correct_sequence_five[16];
+      
+      dff user_sequence[16];
+      dff user_sequence_count[16];
+      
+      dff mask_one[16];
+      dff mask_two[16];
+      dff mask_three[16];
+      dff mask_four[16];
+      dff mask_position[16];
+      
+      dff timer_reg[16];
+      
+      dff t17emp[16];
+      dff t18emp[16];
+      dff t19emp[16];
+      dff t1Aemp[16];
+      dff t1Bemp[16];
+      dff t1Cemp[16];
+      dff t1Demp[16];
+      dff t1Eemp[16];
+      dff t1Femp[16];
+    }
+  }
+  // buttons for adding
+  const ZERO_BUTTON = 16h0000;
+  const ONE_BUTTON = 16h0001;
+  const TWO_BUTTON = 16h0002;
+  const THREE_BUTTON = 16h0003;
+  const FOUR_BUTTON = 16h0004;
+  const FIVE_BUTTON = 16h0005;
+  const SIX_BUTTON = 16h0006;
+  const SEVEN_BUTTON = 16h0007;
+  const EIGHT_BUTTON = 16h0008;
+  const NINE_BUTTON = 16h0009;
+  
+  const CORRECT_SEQUENCE = 16h1234;
+  
+  const MASK_ONE = 16hffff;
+  const MASK_TWO = 16hfff0;
+  const MASK_THREE = 16hff00;
+  const MASK_FOUR = 16hf000;
+  const MASK_POSITION = 16h0011;
+
+  always {
+    out_correct_sequence = CORRECT_SEQUENCE;
+    out_timer = timer_reg.q;
+    out_player_squeence = user_sequence.q;
+    
+    zero_button.d = ZERO_BUTTON;
+    one_button.d = ONE_BUTTON;
+    two_button.d = TWO_BUTTON;
+    three_button.d = THREE_BUTTON;
+    four_button.d = FOUR_BUTTON;
+    five_button.d = FIVE_BUTTON;
+    six_button.d = SIX_BUTTON;
+    seven_button.d = SEVEN_BUTTON;
+    eight_button.d = EIGHT_BUTTON;
+    nine_button.d = NINE_BUTTON;
+    
+    correct_sequence_one.d = CORRECT_SEQUENCE;
+    correct_sequence_two.d = CORRECT_SEQUENCE;
+    correct_sequence_three.d = CORRECT_SEQUENCE;
+    correct_sequence_four.d = CORRECT_SEQUENCE;
+    correct_sequence_five.d = CORRECT_SEQUENCE;
+    
+    mask_one.d = MASK_ONE;
+    mask_two.d = MASK_TWO;
+    mask_three.d = MASK_THREE;
+    mask_four.d = MASK_FOUR;
+    mask_position.d = MASK_POSITION;
+    
+    //write port
+    if (we){
+      case(write_address){
+        5h0f: user_sequence.d = data;
+        5h10: user_sequence_count.d = data;
+        5h16: timer_reg.d = data;
+        5h17: t17emp.d = data;
+        5h18: t18emp.d = data;
+        5h19: t19emp.d = data;
+        5h1a: t1Aemp.d = data;
+        5h1b: t1Bemp.d = data;
+        5h1c: t1Cemp.d = data;
+        5h1d: t1Demp.d = data;
+        5h1e: t1Eemp.d = data;
+        5h1f: t1Femp.d = data;
+      }
+    }
+    
+      
+    //read port a
+    case(read_address_a){
+      5h00: out_a = zero_button.q;
+      5h01: out_a = one_button.q;
+      5h02: out_a = two_button.q;
+      5h03: out_a = three_button.q;
+      5h04: out_a = four_button.q;
+      5h05: out_a = five_button.q;
+      5h06: out_a = six_button.q;
+      5h07: out_a = seven_button.q;
+      5h08: out_a = eight_button.q;
+      5h09: out_a = nine_button.q;
+      5h0a: out_a = correct_sequence_one.q;
+      5h0b: out_a = correct_sequence_two.q;
+      5h0c: out_a = correct_sequence_three.q;
+      5h0d: out_a = correct_sequence_four.q;
+      5h0e: out_a = correct_sequence_five.q;
+      5h0f: out_a = user_sequence.q;
+      5h10: out_a = user_sequence_count.q;
+      5h11: out_a = mask_one.q;
+      5h12: out_a = mask_two.q;
+      5h13: out_a = mask_three.q;
+      5h14: out_a = mask_four.q;
+      5h15: out_a = mask_position.q;
+      5h16: out_a = timer_reg.q;
+      5h17: out_a = t17emp.q;
+      5h18: out_a = t18emp.q;
+      5h19: out_a = t19emp.q;
+      5h1a: out_a = t1Aemp.q;
+      5h1b: out_a = t1Bemp.q;
+      5h1c: out_a = t1Cemp.q;
+      5h1d: out_a = t1Demp.q;
+      5h1e: out_a = t1Eemp.q;
+      5h1f: out_a = t1Femp.q;
+      default: out_a = 0;
+    }
+    
+    //read port b
+    case(read_address_b){
+      5h00: out_b = zero_button.q;
+      5h01: out_b = one_button.q;
+      5h02: out_b = two_button.q;
+      5h03: out_b = three_button.q;
+      5h04: out_b = four_button.q;
+      5h05: out_b = five_button.q;
+      5h06: out_b = six_button.q;
+      5h07: out_b = seven_button.q;
+      5h08: out_b = eight_button.q;
+      5h09: out_b = nine_button.q;
+      5h0a: out_b = correct_sequence_one.q;
+      5h0b: out_b = correct_sequence_two.q;
+      5h0c: out_b = correct_sequence_three.q;
+      5h0d: out_b = correct_sequence_four.q;
+      5h0e: out_b = correct_sequence_five.q;
+      5h0f: out_b = user_sequence.q;
+      5h10: out_b = user_sequence_count.q;
+      5h11: out_b = mask_one.q;
+      5h12: out_b = mask_two.q;
+      5h13: out_b = mask_three.q;
+      5h14: out_b = mask_four.q;
+      5h15: out_b = mask_position.q;
+      5h16: out_b = timer_reg.q;
+      5h17: out_b = t17emp.q;
+      5h18: out_b = t18emp.q;
+      5h19: out_b = t19emp.q;
+      5h1a: out_b = t1Aemp.q;
+      5h1b: out_b = t1Bemp.q;
+      5h1c: out_b = t1Cemp.q;
+      5h1d: out_b = t1Demp.q;
+      5h1e: out_b = t1Eemp.q;
+      5h1f: out_b = t1Femp.q;
+      default: out_b = 0;
+    }
+  }
+}

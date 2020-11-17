@@ -1,0 +1,94 @@
+pin clk CLOCK;
+clock clk 100MHz;
+
+pin rst_n RESET;
+
+pin led[0] LED0;
+pin led[1] LED1;
+pin led[2] LED2;
+pin led[3] LED3;
+pin led[4] LED4;
+pin led[5] LED5;
+pin led[6] LED6;
+pin led[7] LED7;
+
+// flip the Tx/Rx lines
+pin usb_rx USB_TX;
+pin usb_tx USB_RX;
+
+// leds for win and lose
+pin ledWIN A12;
+pin ledLOSE A11;
+
+// start/restart button
+pin startbutton B45 pulldown;
+pin ledStartButton B6;
+
+// buttons from gameboard
+pin boardbutton[0] B30 pulldown;
+pin boardbutton[1] B31 pulldown;
+pin boardbutton[2] B33 pulldown;
+pin boardbutton[3] B34 pulldown;
+pin boardbutton[4] B36 pulldown;
+pin boardbutton[5] B37 pulldown;
+pin boardbutton[6] B39 pulldown;
+pin boardbutton[7] B40 pulldown;
+pin boardbutton[8] B42 pulldown;
+pin boardbutton[9] B43 pulldown;
+
+// for debugging 10 buttons 10 leds
+pin ledButton[0] B21;
+pin ledButton[1] B20;
+pin ledButton[2] B18;
+pin ledButton[3] B17;
+pin ledButton[4] B15;
+pin ledButton[5] B14;
+pin ledButton[6] B12;
+pin ledButton[7] B11;
+pin ledButton[8] B9;
+pin ledButton[9] B8;
+
+// for the timer 7 segment display
+pin timer_sel[0] A9;
+pin timer_sel[1] A8;
+pin timer_sel[2] A42;
+pin timer_sel[3] A43;
+
+pin timer_seg[0] A5;
+pin timer_seg[1] A6;
+pin timer_seg[2] A48;
+pin timer_seg[3] A46;
+pin timer_seg[4] A45;
+pin timer_seg[5] A3;
+pin timer_seg[6] A2;
+pin timer_seg[7] A49;
+
+// for player sequence 7 segment display
+pin player_seg_sel[0] C43;
+pin player_seg_sel[1] C42;
+pin player_seg_sel[2] C8;
+pin player_seg_sel[3] C9;
+
+pin player_seg[0] C46;
+pin player_seg[1] C45;
+pin player_seg[2] C5;
+pin player_seg[3] C6;
+pin player_seg[4] C48;
+pin player_seg[5] C2;
+pin player_seg[6] C3;
+pin player_seg[7] C49;
+
+// for correct sequence 7 segment display
+pin correct_seg_sel[0] A27;
+pin correct_seg_sel[1] A28;
+pin correct_seg_sel[2] A24;
+pin correct_seg_sel[3] A23;
+
+pin correct_seg[0] A30;
+pin correct_seg[1] A31;
+pin correct_seg[2] A21;
+pin correct_seg[3] A20;
+pin correct_seg[4] A33;
+pin correct_seg[5] A34;
+pin correct_seg[6] A18;
+pin correct_seg[7] A17;

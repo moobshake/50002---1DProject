@@ -1,0 +1,42 @@
+module adder16bit (
+    input alufn[4],
+    input a[16],
+    input b[16],
+    output out[16],
+    output z,
+    output v,
+    output n
+  ) {
+  
+  sig sum[16];
+  sig xb[16];
+  sig code[2];
+  
+  always {
+    // cannot use bit[1] because it will screw up the compare operations. Compare operations don't use bit[3] thus can be used here to check for mul/divide
+    code[0] = alufn[0]; // add or subtract
+    code[1] = alufn[3]; // in the case of compare operations ubtract // if 0 means it is compare if 1 means it is mul/div
+    case(code) {
+        b00: sum = $signed(a) + $signed(b); // addition
+        b01: sum = $signed(a) - $signed(b); // subtraction
+        b10: sum = $signed(a) * $signed(b); // multiplication
+        b11: sum = $signed(a) / $signed(b); // division
+        default: sum = 0;
+    }
+    
+    // checks for z and output z
+    if (sum==0){
+        z = 1;
+    }
+    else{
+        z = 0;
+    }
+    
+    n = sum[15]; // output n
+    
+    out = sum; // output the sum
+    xb = b ^ alufn[0]; // creating xb
+    v = (a[15] & xb[15] & ~sum[15]) + (~a[15] & ~xb[15] & sum[15]);   // output v
+    
+  }
+}

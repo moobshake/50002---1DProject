@@ -1,0 +1,53 @@
+module alu16bit (
+    input a[16],
+    input b[16],
+    input alufn[6],
+    output out[16],
+    output z,
+    output v,
+    output n
+  ) {
+  // 4 main modules of the ALU
+  adder16bit adder;
+  shifter16bit shifter;
+  compare16bit comparator;
+  bool16bit bool;
+  
+  always {
+    out = 0;
+    
+    // adder unit, will always add/sub the two inputs
+    adder.alufn = alufn[3:0];
+    adder.a = a;
+    adder.b = b;
+    z = adder.z;
+    v = adder.v;
+    n = adder.n;
+    
+    // if shifting take the second bit of opcode
+    shifter.alufn10 = alufn[1:0];
+    shifter.a = a;
+    shifter.b = b;
+    
+    // if boolean operations take in the 4 bits of opcode
+    bool.a = a;
+    bool.b = b;
+    bool.alufn30 = alufn[3:0];
+    
+    // if comparing operations take in the 3rd and 2nd of opcode
+    comparator.z = adder.z;
+    comparator.v = adder.v;
+    comparator.n = adder.n;
+    comparator.alufn21 = alufn[2:1];
+    
+    // msb and bit 5 is to determine what is the output summation
+    case (alufn[5:4]){
+      b00: out = adder.out;
+      b01: out = bool.out;
+      b10: out = shifter.out;
+      b11: out = comparator.out;
+    }
+    
+    
+  }
+}

@@ -1,0 +1,76 @@
+module au_top (
+    input clk,              // 100MHz clock
+    input rst_n,            // reset button (active low)
+    output led [8],         // 8 user controllable LEDs
+    input usb_rx,           // USB->Serial input
+    output usb_tx,           // USB->Serial output
+    
+    output timer_sel[4], // selection of 7 segment for timer
+    output timer_seg[8], // timer 7 segment display
+    
+    output player_seg_sel[4], // selection of 7 segment for player
+    output player_seg[8], // player 7 segment display
+    
+    output correct_seg_sel[4], // selection of 7 segment for correct
+    output correct_seg[8], // correct 7 segment display
+    
+    output ledWIN, // winning led
+    output ledLOSE, // losing led
+    
+    input startbutton, // button for start/reset
+    output ledStartButton, // debugging led for start/reset
+    
+    input boardbutton[10], // inputs from board buttons
+    
+    output ledButton[10] // leds for winning or losing
+  ) {
+  
+  sig rst;                  // reset signal
+
+  .clk(clk) {
+    // The reset conditioner is used to synchronize the reset signal to the FPGA
+    // clock. This ensures the entire FPGA comes out of reset at the same time.
+    reset_conditioner reset_cond;
+    button_conditioner boardbuttoncond[10];
+    button_conditioner startbuttoncond;
+    edge_detector startbuttondector(#RISE(1), #FALL(0)); //detect on rising edge only
+    .rst(rst) {
+      multi_seven_seg seg_correct;
+      multi_seven_seg seg_timer;
+      multi_seven_seg seg_player;
+    }
+  }
+  
+  always {
+    reset_cond.in = ~rst_n; // input raw inverted reset signal
+    rst = reset_cond.out;   // conditioned reset
+    
+    led = 8h00;             // turn LEDs off
+
+    usb_tx = usb_rx;        // echo the serial data
+    
+    boardbuttoncond.in = boardbutton;
+    
+    ledWIN = boardbuttoncond.out[0];
+    ledLOSE = boardbuttoncond.out[1];
+    
+    startbuttoncond.in = startbutton;
+    startbuttondector.in = startbuttoncond.out;
+    ledStartButton = startbuttondector.out;
+    
+    seg_correct.values = {4h8, 4h8, 4h8, 4h8};
+    seg_timer.values = {4h8, 4h8, 4h8, 4h8};
+    seg_player.values = {4h8, 4h8, 4h8, 4h8};
+    
+    timer_seg = ~seg_timer.seg; // connect segments to the driver
+    timer_sel = ~seg_timer.sel; // connect digit select to the driver
+    
+    player_seg = ~seg_player.seg;
+    player_seg_sel = ~seg_player.sel;
+    
+    correct_seg = ~seg_correct.seg;
+    correct_seg_sel = ~seg_correct.sel;
+    
+    ledButton = boardbutton;
+  }
+}

@@ -21,14 +21,14 @@ module gamecu (
     output bsel[2],
     output wdsel[2],
     output alufn[6],
-    output level[3]
+    output level[4]
   ) {
   
   .clk(clk){
     .rst(rst){
       dff win_dff;
       dff lose_dff;
-      dff level_dff[3];
+      dff level_dff[4];
       
       fsm levelFSM ={
         LEVEL1,
@@ -44,6 +44,7 @@ module gamecu (
       LOAD_TIME,
       IDLE,
       IDLE_BUTTON_RELEASE,
+      WINLOSEWAITBUTTON,
         
       CHECK_BASE_TIME,
       BRANCH_FROM_TIME_CHECK,
@@ -199,6 +200,13 @@ module gamecu (
           }
         }
         else {
+          if (level_dff.q == 0 || level_dff.q == 4hb) {
+            we = 1;
+            ra = 5h0b;
+            rc = 5h0a;
+            alufn = ALDROP;
+            level_dff.d = 1;
+          }
           bigFSM.d = bigFSM.START_RESET;
         }
         
@@ -222,7 +230,11 @@ module gamecu (
         
       bigFSM.IDLE:
         if (startbutton) {
-          bigFSM.d = bigFSM.START_RESET;
+          level_dff.d = 1;
+          we = 1;
+          rc = 5h16;
+          wdsel = 11;
+          bigFSM.d = bigFSM.WINLOSEWAITBUTTON;
         }
         else if (decrease_timer) {
           bigFSM.d = bigFSM.CHECK_BASE_TIME;
@@ -616,12 +628,16 @@ module gamecu (
           bigFSM.d = bigFSM.IDLE_BUTTON_RELEASE;
         }
         else if (win_dff.q == 1 || lose_dff.q == 1) {
-          bigFSM.d = bigFSM.START_RESET;
+          bigFSM.d = bigFSM.WINLOSEWAITBUTTON;
         }
       
       bigFSM.IDLE_BUTTON_RELEASE:
         if (startbutton) {
-          bigFSM.d = bigFSM.START_RESET;
+          level_dff.d = 1;
+          we = 1;
+          rc = 5h16;
+          wdsel = 11;
+          bigFSM.d = bigFSM.WINLOSEWAITBUTTON;
         }
         else if (decrease_timer) {
           bigFSM.d = bigFSM.CHECK_BASE_TIME;
@@ -634,7 +650,7 @@ module gamecu (
           bigFSM.d = bigFSM.IDLE;
         }
         
-      bigFSM.BOOM: // need to ADD ON
+      bigFSM.BOOM: // need to ADD ON 
         lose_dff.d = 1;
         win_dff.d = 0;
         bigFSM.d = bigFSM.BRANCH_CLEAR_TEMP_REGS;
@@ -643,6 +659,15 @@ module gamecu (
         lose_dff.d = 0;
         win_dff.d = 1;
         bigFSM.d = bigFSM.BRANCH_CLEAR_TEMP_REGS;
+        
+      bigFSM.WINLOSEWAITBUTTON:
+        level_dff.d = 4hb;
+        if (startbutton) {
+          bigFSM.d = bigFSM.START_RESET;
+        }
+        else {
+          bigFSM.d = bigFSM.WINLOSEWAITBUTTON;
+        }
     }
   }
 }

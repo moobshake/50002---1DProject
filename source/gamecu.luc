@@ -6,6 +6,7 @@ module gamecu (
     
     input boardbutton[10],
     input startbutton,
+    input levelbutton,
     
     input decrease_timer,
     input calculation_timer,
@@ -19,13 +20,22 @@ module gamecu (
     output asel[2],
     output bsel[2],
     output wdsel[2],
-    output alufn[6]
+    output alufn[6],
+    output level[3]
   ) {
   
   .clk(clk){
     .rst(rst){
       dff win_dff;
       dff lose_dff;
+      dff level_dff[3];
+      
+      fsm levelFSM ={
+        LEVEL1,
+        LEVEL2,
+        LEVEL3,
+        LEVEL4
+      };
       
       fsm bigFSM = {
       START_RESET,
@@ -113,7 +123,7 @@ module gamecu (
 //  const CMPLEOP = 6b110111;
 
   always {
-  
+    level = level_dff.q;
     win = win_dff.q;
     lose = lose_dff.q;
     we = 0;
@@ -128,11 +138,69 @@ module gamecu (
     case (bigFSM.q) {
       bigFSM.START_RESET:
         if (startbutton) {
-            lose_dff.d = 0;
-            win_dff.d = 0;
-            bigFSM.d = bigFSM.RESET_USER_SEQUENCE_COUNTER;
+          lose_dff.d = 0;
+          win_dff.d = 0;
+          bigFSM.d = bigFSM.RESET_USER_SEQUENCE_COUNTER;
+        }
+        else if (levelbutton){
+          case (levelFSM.q) {
+            levelFSM.LEVEL1:
+                level_dff.d = 1;
+                we = 1;
+                ra = 5h0b;
+                rc = 5h0a;
+                alufn = ALDROP;
+                if (levelbutton) {
+                  levelFSM.d = levelFSM.LEVEL2;
+                }
+                else {
+                  levelFSM.d = levelFSM.LEVEL1;
+                }
+              
+            levelFSM.LEVEL2:
+                level_dff.d = 2;
+                we = 1;
+                ra = 5h0c;
+                rc = 5h0a;
+                alufn = ALDROP;
+                if (levelbutton) {
+                  levelFSM.d = levelFSM.LEVEL3;
+                }
+                else {
+                  levelFSM.d = levelFSM.LEVEL2;
+                }
+              
+            levelFSM.LEVEL3:
+                level_dff.d = 3;
+                we = 1;
+                ra = 5h0d;
+                rc = 5h0a;
+                alufn = ALDROP;
+                if (levelbutton) {
+                  levelFSM.d = levelFSM.LEVEL4;
+                }
+                else {
+                  levelFSM.d = levelFSM.LEVEL3;
+                }
+              
+            levelFSM.LEVEL4:
+              level_dff.d = 4;
+              we = 1;
+              ra = 5h0e;
+              rc = 5h0a;
+              alufn = ALDROP;
+              if (levelbutton) {
+                levelFSM.d = levelFSM.LEVEL1;
+              }
+              else {
+                levelFSM.d = levelFSM.LEVEL4;
+              }
+              
           }
-        else {bigFSM.d = bigFSM.START_RESET;}
+        }
+        else {
+          bigFSM.d = bigFSM.START_RESET;
+        }
         
       bigFSM.RESET_USER_SEQUENCE_COUNTER:
         we = 1;

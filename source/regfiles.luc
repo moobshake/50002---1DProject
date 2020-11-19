@@ -71,7 +71,7 @@ module regfiles (
   const EIGHT_BUTTON = 16h0008;
   const NINE_BUTTON = 16h0009;
   
-  const CORRECT_SEQUENCE1 = 16h1111;
+  const CORRECT_SEQUENCE1 = 16h4123;
   const CORRECT_SEQUENCE2 = 16h9037;
   const CORRECT_SEQUENCE3 = 16h2845;
   const CORRECT_SEQUENCE4 = 16h1111;
@@ -98,7 +98,6 @@ module regfiles (
     eight_button.d = EIGHT_BUTTON;
     nine_button.d = NINE_BUTTON;
     
-    correct_sequence_one.d = CORRECT_SEQUENCE4;
     correct_sequence_two.d = CORRECT_SEQUENCE1;
     correct_sequence_three.d = CORRECT_SEQUENCE2;
     correct_sequence_four.d = CORRECT_SEQUENCE3;

@@ -34,7 +34,9 @@ module au_top (
     
     button_conditioner boardbuttoncond[10];
     button_conditioner startbuttoncond;
+    
     edge_detector startbuttondector(#RISE(1), #FALL(0)); //detect on rising edge only
+    edge_detector levelbuttondector(#RISE(1), #FALL(0)); //detect on rising edge only
     .rst(rst) {
       multi_seven_seg seg_correct;
       multi_seven_seg seg_timer;
@@ -56,10 +58,11 @@ module au_top (
     boardbuttoncond.in = boardbutton;
     startbuttoncond.in = startbutton;
     startbuttondector.in = startbuttoncond.out;
-    
+    levelbuttondector.in = boardbuttoncond.out[0];
     
     betaCPU.boardbutton = boardbuttoncond.out;
     betaCPU.startbutton = startbuttondector.out;
+    betaCPU.levelbutton = levelbuttondector.out;
     
     ledWIN = betaCPU.winLed;
     ledLOSE = betaCPU.loseLed;

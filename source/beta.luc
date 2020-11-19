@@ -4,14 +4,14 @@ module beta (
     
     input startbutton, // button for start/reset
     input boardbutton[10], // inputs from board buttons
+    input levelbutton,
     
     output winLed,
     output loseLed,
     output timer[4][4],
     output correctSequence[4][4],
     output userSequence[4][4]
-    
-    
+     
   ) {
   
   //temp variables
@@ -45,8 +45,10 @@ module beta (
     correctSequence = {reg.out_correct_sequence[3:0], reg.out_correct_sequence[7:4], reg.out_correct_sequence[11:8], reg.out_correct_sequence[15:12]};
     
     // convert the hex to decimal to show on the 7 segment
-    converter.value = reg.out_timer;
-    timer = converter.digits;
+    converter.value = reg.out_timer[7:0];
+    timer[3] = game_cu.level; 
+    timer[2] = 4ha;
+    timer[1:0] = converter.digits;
     
     //timer[3] = converter.digits[0];
     //timer[2] = converter.digits[1];
@@ -58,6 +60,7 @@ module beta (
     // pass buttons to gamecu
     game_cu.boardbutton = boardbutton;
     game_cu.startbutton = startbutton;
+    game_cu.levelbutton = levelbutton;
     
     // pass timer to CU unit per second
     game_timer_detector.in = slow_timer.value;

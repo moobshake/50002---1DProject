@@ -8,6 +8,7 @@ module gamecu (
     input startbutton,
     
     input decrease_timer,
+    input calculation_timer,
     
     output win,
     output lose,
@@ -152,7 +153,10 @@ module gamecu (
         bigFSM.d = bigFSM.IDLE;
         
       bigFSM.IDLE:
-        if (decrease_timer) {
+        if (startbutton) {
+          bigFSM.d = bigFSM.START_RESET;
+        }
+        else if (decrease_timer) {
           bigFSM.d = bigFSM.CHECK_BASE_TIME;
         }
         else if (boardbutton[0]){
@@ -311,7 +315,12 @@ module gamecu (
         rc = 5h1a;
         bsel = 10;
         alufn = DIVOP;
-        bigFSM.d = bigFSM.BRANCH_FROM_DIVISION;
+        if (calculation_timer) {
+          bigFSM.d = bigFSM.BRANCH_FROM_DIVISION;
+        }
+        else {
+          bigFSM.d = bigFSM.FIND_MASKED_POSITION;
+        }
         
       bigFSM.BRANCH_FROM_DIVISION:
         bigFSM.d = bigFSM.FIND_ADDRESS_TO_MASK;
@@ -335,13 +344,16 @@ module gamecu (
         else if (rb_fromReg == 16h0013) {
           bigFSM.d = bigFSM.MASK_CORRECT_SEQUENCE3;
         }
-        else if (rb_fromReg == 16h0012) {
+        else if (rb_fromReg == 16h0014) {
           bigFSM.d = bigFSM.MASK_CORRECT_SEQUENCE4;
+        }
+        else {
+          bigFSM.d = bigFSM.BRANCH_FROM_FIND_ADDRESS;
         }
       
       bigFSM.MASK_CORRECT_SEQUENCE1:
         we = 1;
-        ra = 5h1a;
+        ra = 5h0a;
         rb = 5h11;
         rc = 5h1c;
         alufn = ANDOP;
@@ -349,7 +361,7 @@ module gamecu (
         
       bigFSM.MASK_CORRECT_SEQUENCE2:
         we = 1;
-        ra = 5h1a;
+        ra = 5h0a;
         rb = 5h12;
         rc = 5h1c;
         alufn = ANDOP;
@@ -357,7 +369,7 @@ module gamecu (
         
       bigFSM.MASK_CORRECT_SEQUENCE3:
         we = 1;
-        ra = 5h1a;
+        ra = 5h0a;
         rb = 5h13;
         rc = 5h1c;
         alufn = ANDOP;
@@ -365,7 +377,7 @@ module gamecu (
         
       bigFSM.MASK_CORRECT_SEQUENCE4:
         we = 1;
-        ra = 5h1a;
+        ra = 5h0a;
         rb = 5h14;
         rc = 5h1c;
         alufn = ANDOP;
@@ -384,11 +396,14 @@ module gamecu (
         
       bigFSM.BRANCH_FROM_INPUT_CHECK:
         rb = 5h1f;
-        if (rb_fromReg == 16h0001) {
+        if (rb_fromReg == 16h0000) {
           bigFSM.d = bigFSM.BOOM;
         }
-        else if (rb_fromReg == 16b0000) {
+        else if (rb_fromReg == 16b0001) {
           bigFSM.d = bigFSM.CHECK_BASE_USER_SEQUENCE_COUNTER;
+        }
+        else {
+          bigFSM.d = bigFSM.BRANCH_FROM_INPUT_CHECK;
         }
         
       bigFSM.CHECK_BASE_USER_SEQUENCE_COUNTER:
@@ -446,6 +461,9 @@ module gamecu (
         }
         else if (rb_fromReg == 16b0) {
           bigFSM.d = bigFSM.DECREASE_TIME_BY_1;
+        }
+        else {
+          bigFSM.d = bigFSM.BRANCH_FROM_TIME_CHECK;
         }
       bigFSM.DECREASE_TIME_BY_1:
         we = 1;
@@ -530,11 +548,14 @@ module gamecu (
           bigFSM.d = bigFSM.IDLE_BUTTON_RELEASE;
         }
         else if (win_dff.q == 1 || lose_dff.q == 1) {
-          bigFSM.d = bigFSM.IDLE;
+          bigFSM.d = bigFSM.START_RESET;
         }
       
       bigFSM.IDLE_BUTTON_RELEASE:
-        if (decrease_timer) {
+        if (startbutton) {
+          bigFSM.d = bigFSM.START_RESET;
+        }
+        else if (decrease_timer) {
           bigFSM.d = bigFSM.CHECK_BASE_TIME;
         }
         else if (boardbutton[0] || boardbutton[1] || boardbutton[2] || boardbutton[3] || boardbutton[4] || \
@@ -542,14 +563,16 @@ module gamecu (
           bigFSM.d = bigFSM.IDLE_BUTTON_RELEASE;
         }
         else {
-          bigFSM.d = bigFSM.START_RESET;
+          bigFSM.d = bigFSM.IDLE;
         }
         
       bigFSM.BOOM: // need to ADD ON
         lose_dff.d = 1;
+        win_dff.d = 0;
         bigFSM.d = bigFSM.BRANCH_CLEAR_TEMP_REGS;
         
       bigFSM.YOU_WIN:
+        lose_dff.d = 0;
         win_dff.d = 1;
         bigFSM.d = bigFSM.BRANCH_CLEAR_TEMP_REGS;
     }

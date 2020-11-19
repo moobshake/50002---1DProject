@@ -23,21 +23,22 @@ module beta (
   .clk(clk){
     //edge_detector edge_detector_variableCounter (#RISE(1), #FALL(0));
     edge_detector game_timer_detector(#RISE(1), #FALL(0));
+    edge_detector calculation_detector(#RISE(1), #FALL(0));
     
     .rst(rst){
       gamecu game_cu;
       regfiles reg;
       //variable_counter vc;
       counter slow_timer(#SIZE(1),#DIV(26)); 
-      
+      counter slow_timer2(#SIZE(1),#DIV(15)); // for calculations
     }
   }
   
   hex_to_decimal converter;
   
   always {
-    winLed = 1;
-    loseLed = 1;
+    winLed = game_cu.win;
+    loseLed = game_cu.lose;
     
     // taken from reg directly
     
@@ -45,12 +46,12 @@ module beta (
     
     // convert the hex to decimal to show on the 7 segment
     converter.value = reg.out_timer;
-    //timer = converter.digits;
+    timer = converter.digits;
     
-    timer[3] = converter.digits[0];
-    timer[2] = converter.digits[1];
-    timer[1] = 4h0;
-    timer[0] = 4h0;
+    //timer[3] = converter.digits[0];
+    //timer[2] = converter.digits[1];
+    //timer[1] = 4h0;
+    //timer[0] = 4h0;
     //timer = {reg.out_timer[3:0], reg.out_timer[7:4], reg.out_timer[11:8], reg.out_timer[15:12]};
     userSequence = {reg.out_player_squeence[3:0], reg.out_player_squeence[7:4],  reg.out_player_squeence[11:8], reg.out_player_squeence[15:12]};
     
@@ -58,23 +59,26 @@ module beta (
     game_cu.boardbutton = boardbutton;
     game_cu.startbutton = startbutton;
     
-    game_cu.rb_fromReg = reg.out_b;
-    
-    
     // pass timer to CU unit per second
     game_timer_detector.in = slow_timer.value;
     game_cu.decrease_timer = game_timer_detector.out;
+    
+    calculation_detector.in = slow_timer2.value;
+    game_cu.calculation_timer = calculation_detector.out;
    
     
     // setup regfile units
-    reg.write_address = game_cu.rc;
     reg.we = game_cu.we;
+    reg.write_address = game_cu.rc;
     reg.read_address_a = game_cu.ra;
     reg.read_address_b = game_cu.rb;
+    
+    game_cu.rb_fromReg = reg.out_b;
 
     //asel mux
     case(game_cu.asel){
       b00  : inputAlu_a = reg.out_a;
+      b01: inputAlu_a = 3;
       default : inputAlu_a = 0;
     }
     
@@ -95,7 +99,7 @@ module beta (
 
     //wdsel mux
     case (game_cu.wdsel){
-      b01 : reg.data = d99;
+      b01 : reg.data = 16h0063; // rememeber to change back
       b10 : reg.data = 16h000c;
       b11 : reg.data = 0;
       default : reg.data = game_alu.out;

@@ -71,7 +71,10 @@ module regfiles (
   const EIGHT_BUTTON = 16h0008;
   const NINE_BUTTON = 16h0009;
   
-  const CORRECT_SEQUENCE = 16h1234;
+  const CORRECT_SEQUENCE1 = 16h1111;
+  const CORRECT_SEQUENCE2 = 16h9037;
+  const CORRECT_SEQUENCE3 = 16h2845;
+  const CORRECT_SEQUENCE4 = 16h1111;
   
   const MASK_ONE = 16hffff;
   const MASK_TWO = 16hfff0;
@@ -80,7 +83,7 @@ module regfiles (
   const MASK_POSITION = 16h0011;
 
   always {
-    out_correct_sequence = CORRECT_SEQUENCE;
+    out_correct_sequence = correct_sequence_one.q;
     out_timer = timer_reg.q;
     out_player_squeence = user_sequence.q;
     
@@ -95,11 +98,11 @@ module regfiles (
     eight_button.d = EIGHT_BUTTON;
     nine_button.d = NINE_BUTTON;
     
-    correct_sequence_one.d = CORRECT_SEQUENCE;
-    correct_sequence_two.d = CORRECT_SEQUENCE;
-    correct_sequence_three.d = CORRECT_SEQUENCE;
-    correct_sequence_four.d = CORRECT_SEQUENCE;
-    correct_sequence_five.d = CORRECT_SEQUENCE;
+    correct_sequence_one.d = CORRECT_SEQUENCE4;
+    correct_sequence_two.d = CORRECT_SEQUENCE1;
+    correct_sequence_three.d = CORRECT_SEQUENCE2;
+    correct_sequence_four.d = CORRECT_SEQUENCE3;
+    correct_sequence_five.d = CORRECT_SEQUENCE4;
     
     mask_one.d = MASK_ONE;
     mask_two.d = MASK_TWO;
@@ -110,6 +113,7 @@ module regfiles (
     //write port
     if (we){
       case(write_address){
+        5h0a: correct_sequence_one.d = data;
         5h0f: user_sequence.d = data;
         5h10: user_sequence_count.d = data;
         5h16: timer_reg.d = data;

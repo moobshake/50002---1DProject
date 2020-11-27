@@ -29,6 +29,7 @@ module gamecu (
       dff win_dff;
       dff lose_dff;
       dff level_dff[4];
+      dff button_store[4];
       
       fsm levelFSM ={
         LEVEL1,
@@ -211,6 +212,7 @@ module gamecu (
         }
         
       bigFSM.RESET_USER_SEQUENCE_COUNTER:
+        button_store.d = 0;
         we = 1;
         rc = 5h10;
         wdsel = 10;
@@ -239,34 +241,44 @@ module gamecu (
         else if (decrease_timer) {
           bigFSM.d = bigFSM.CHECK_BASE_TIME;
         }
-        else if (boardbutton[0]){
+        else if (boardbutton[0] && button_store.q != 0){
+          button_store.d = 0;
           bigFSM.d = bigFSM.BUTTON_0;
         }
-        else if (boardbutton[1]){
+        else if (boardbutton[1] && button_store.q != 1){
+          button_store.d = 1;
           bigFSM.d = bigFSM.BUTTON_1;
         }
-        else if (boardbutton[2]){
+        else if (boardbutton[2]&& button_store.q != 2){
+          button_store.d = 2;
           bigFSM.d = bigFSM.BUTTON_2;
         }
-        else if (boardbutton[3]){
+        else if (boardbutton[3]&& button_store.q != 3){
+          button_store.d = 3;
           bigFSM.d = bigFSM.BUTTON_3;
         }
-        else if (boardbutton[4]){
+        else if (boardbutton[4]&& button_store.q != 4){
+          button_store.d = 4;
           bigFSM.d = bigFSM.BUTTON_4;
         }
-        else if (boardbutton[5]){
+        else if (boardbutton[5]&& button_store.q != 5){
+          button_store.d = 5;
           bigFSM.d = bigFSM.BUTTON_5;
         }
-        else if (boardbutton[6]){
+        else if (boardbutton[6]&& button_store.q != 6){
+          button_store.d = 6;
           bigFSM.d = bigFSM.BUTTON_6;
         }
-        else if (boardbutton[7]){
+        else if (boardbutton[7]&& button_store.q != 7){
+          button_store.d = 7;
           bigFSM.d = bigFSM.BUTTON_7;
         }
-        else if (boardbutton[8]){
+        else if (boardbutton[8]&& button_store.q != 8){
+          button_store.d = 8;
           bigFSM.d = bigFSM.BUTTON_8;
         }
-        else if (boardbutton[9]){
+        else if (boardbutton[9]&& button_store.q != 9){
+          button_store.d = 9;
           bigFSM.d = bigFSM.BUTTON_9;
         }
         else {

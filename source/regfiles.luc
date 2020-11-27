@@ -71,10 +71,10 @@ module regfiles (
   const EIGHT_BUTTON = 16h0008;
   const NINE_BUTTON = 16h0009;
   
-  const CORRECT_SEQUENCE1 = 16h4123;
-  const CORRECT_SEQUENCE2 = 16h9037;
-  const CORRECT_SEQUENCE3 = 16h2845;
-  const CORRECT_SEQUENCE4 = 16h1111;
+  const CORRECT_SEQUENCE1 = 16h8139;
+  const CORRECT_SEQUENCE2 = 16h4267;
+  const CORRECT_SEQUENCE3 = 16h5976;
+  const CORRECT_SEQUENCE4 = 16h2562;
   
   const MASK_ONE = 16hffff;
   const MASK_TWO = 16hfff0;

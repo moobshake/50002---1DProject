@@ -47,7 +47,5 @@ module alu16bit (
       b10: out = shifter.out;
       b11: out = comparator.out;
     }
-    
-    
   }
 }

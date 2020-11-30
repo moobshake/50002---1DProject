@@ -37,26 +37,20 @@ module beta (
   hex_to_decimal converter;
   
   always {
+    // winning and losing LED
     winLed = game_cu.win;
     loseLed = game_cu.lose;
     
     // taken from reg directly
-    
+    // output the correct sequence for player to hit and the player current sequence
     correctSequence = {reg.out_correct_sequence[3:0], reg.out_correct_sequence[7:4], reg.out_correct_sequence[11:8], reg.out_correct_sequence[15:12]};
-    
+    userSequence = {reg.out_player_squeence[3:0], reg.out_player_squeence[7:4],  reg.out_player_squeence[11:8], reg.out_player_squeence[15:12]};
     // convert the hex to decimal to show on the 7 segment
     converter.value = reg.out_timer[7:0];
-    timer[3] = game_cu.level; 
+    timer[3] = game_cu.level; // display the level
     timer[2] = 4ha;
-    timer[1:0] = converter.digits;
-    
-    //timer[3] = converter.digits[0];
-    //timer[2] = converter.digits[1];
-    //timer[1] = 4h0;
-    //timer[0] = 4h0;
-    //timer = {reg.out_timer[3:0], reg.out_timer[7:4], reg.out_timer[11:8], reg.out_timer[15:12]};
-    userSequence = {reg.out_player_squeence[3:0], reg.out_player_squeence[7:4],  reg.out_player_squeence[11:8], reg.out_player_squeence[15:12]};
-    
+    timer[1:0] = converter.digits; // display the timer
+
     // pass buttons to gamecu
     game_cu.boardbutton = boardbutton;
     game_cu.startbutton = startbutton;
@@ -68,7 +62,6 @@ module beta (
     
     calculation_detector.in = slow_timer2.value;
     game_cu.calculation_timer = calculation_detector.out;
-   
     
     // setup regfile units
     reg.we = game_cu.we;
@@ -76,12 +69,13 @@ module beta (
     reg.read_address_a = game_cu.ra;
     reg.read_address_b = game_cu.rb;
     
+    // get data from the reg for CU operations
     game_cu.rb_fromReg = reg.out_b;
 
-    //asel mux
+    //asel mux, unused 10, 11 is for debugging
     case(game_cu.asel){
       b00  : inputAlu_a = reg.out_a;
-      b01: inputAlu_a = 3;
+      b01: inputAlu_a = 3; // for debugging
       default : inputAlu_a = 0;
     }
     
@@ -95,15 +89,15 @@ module beta (
       
     }
     
-    // ALU
+    // ALU operations
     game_alu.a = inputAlu_a;
     game_alu.b = inputAlu_b;
     game_alu.alufn = game_cu.alufn;
 
     //wdsel mux
     case (game_cu.wdsel){
-      b01 : reg.data = 16h0063; // rememeber to change back
-      b10 : reg.data = 16h000c;
+      b01 : reg.data = 16h0063; // reset timer to 99 seconds
+      b10 : reg.data = 16h000c; // reset user counter to 12
       b11 : reg.data = 0;
       default : reg.data = game_alu.out;
     }

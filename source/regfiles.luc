@@ -109,7 +109,7 @@ module regfiles (
     mask_four.d = MASK_FOUR;
     mask_position.d = MASK_POSITION;
     
-    //write port
+    // write port
     if (we){
       case(write_address){
         5h0a: correct_sequence_one.d = data;
@@ -129,7 +129,7 @@ module regfiles (
     }
     
       
-    //read port a
+    // read port a
     case(read_address_a){
       5h00: out_a = zero_button.q;
       5h01: out_a = one_button.q;
@@ -166,7 +166,7 @@ module regfiles (
       default: out_a = 0;
     }
     
-    //read port b
+    // read port b
     case(read_address_b){
       5h00: out_b = zero_button.q;
       5h01: out_b = one_button.q;

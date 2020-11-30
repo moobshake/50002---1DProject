@@ -5,6 +5,7 @@ module seven_seg (
 
   always {
     case (char) {
+      // this is inverse from the normal driver because we purchased common cathode 7-segment displays
       0: segs = 7b1000000;
       1: segs = 7b1111001;
       2: segs = 7b0100100;
@@ -16,7 +17,7 @@ module seven_seg (
       8: segs = 7b0000000;
       9: segs = 7b0011000;
       10: segs = 7b0111111;
-      11: segs = 7b0001000;
+      11: segs = 7b0001000; // "-"
       default: segs = 7b1111111;
     }
   }

@@ -4,24 +4,24 @@ module gamecu (
     
     input rb_fromReg[16], // take in rb
     
-    input boardbutton[10],
+    input boardbutton[10], // the buttons that the ball will press
     input startbutton,
     input levelbutton,
     
-    input decrease_timer,
-    input calculation_timer,
+    input decrease_timer, // when the slow timer clock sends a 1 signal
+    input calculation_timer, // for divide operation where it time to calculate the division
     
-    output win,
-    output lose,
-    output we,
-    output ra[5],
-    output rb[5],
-    output rc[5],
-    output asel[2],
-    output bsel[2],
-    output wdsel[2],
-    output alufn[6],
-    output level[4]
+    output win, // when win will light up WINLED
+    output lose, // when lose will light up LOSELED
+    output we,  // to the REG
+    output ra[5], // to the REG
+    output rb[5], // to the REG
+    output rc[5], // to the REG
+    output asel[2],  // to BETA
+    output bsel[2],  // to BETA
+    output wdsel[2],  // to BETA
+    output alufn[6], // to ALU
+    output level[4] // for choosing the state
   ) {
   
   .clk(clk){
@@ -105,24 +105,27 @@ module gamecu (
       };
     }
   }
-  
+
+  // The 7 ALU Operations used in our game
   const ADDOP = 6b000000;
   const SUBOP = 6b000001;
-//  const MULOP = 6b001000;
   const DIVOP = 6b001001;
   const ANDOP = 6b011000;
-//  const NANDOP = 6b010111;
-//  const OROP = 6b011110;
-//  const NOROP = 6b010001;
-//  const XOROP = 6b010110;
-//  const XNOROP = 6b011001;
   const ALDROP = 6b011010;
   const SHLOP = 6b100000;
-//  const SHROP = 6b100001;
-//  const SRAOP = 6b100011;
   const CMPEQOP = 6b110011;
-//  const CMPLTOP = 6b110101;
-//  const CMPLEOP = 6b110111;
+
+  // ALU Operations NOT USED
+  // const CMPLTOP = 6b110101;
+  // const CMPLEOP = 6b110111;
+  // const MULOP = 6b001000;
+  // const NANDOP = 6b010111;
+  // const OROP = 6b011110;
+  // const NOROP = 6b010001;
+  // const XOROP = 6b010110;
+  // const XNOROP = 6b011001;
+  // const SHROP = 6b100001;
+  // const SRAOP = 6b100011;
 
   always {
     level = level_dff.q;
